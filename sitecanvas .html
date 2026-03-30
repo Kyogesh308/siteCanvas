@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiteCanvas – Visual Website Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161920;
+    --surface2: #1e2230;
+    --surface3: #252a3a;
+    --border: #2a2f42;
+    --accent: #f97316;
+    --accent2: #3b82f6;
+    --accent3: #8b5cf6;
+    --text: #f0f2f8;
+    --text2: #8892aa;
+    --text3: #5c6478;
+    --green: #22c55e;
+    --red: #ef4444;
+    --sidebar-w: 220px;
+    --topbar-h: 56px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
+  
+  /* ─── SCREENS ─── */
+  .screen { display: none; width: 100%; height: 100vh; }
+  .screen.active { display: flex; }
+
+  /* ─── DASHBOARD ─── */
+  #screen-dashboard { flex-direction: row; }
+
+  .sidebar {
+    width: var(--sidebar-w); height: 100vh; background: var(--surface);
+    border-right: 1px solid var(--border); display: flex; flex-direction: column;
+    flex-shrink: 0; position: relative; z-index: 10;
+  }
+  .sidebar-logo {
+    padding: 18px 20px; display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-mark {
+    width: 32px; height: 32px; background: var(--accent);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; color: #fff;
+  }
+  .logo-text { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; }
+
+  .sidebar-nav { flex: 1; padding: 12px 10px; overflow-y: auto; }
+  .nav-label { font-size: 10px; font-weight: 600; letter-spacing: .1em; color: var(--text3); text-transform: uppercase; padding: 8px 10px 4px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px;
+    cursor: pointer; font-size: 13.5px; color: var(--text2); transition: all .15s; margin-bottom: 2px;
+    user-select: none;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: rgba(249,115,22,.12); color: var(--accent); }
+  .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  .sidebar-footer { padding: 14px 10px; border-top: 1px solid var(--border); }
+  .user-chip {
+    display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 8px;
+    cursor: pointer; transition: background .15s;
+  }
+  .user-chip:hover { background: var(--surface2); }
+  .avatar { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent3)); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+  .user-info { flex: 1; }
+  .user-name { font-size: 12.5px; font-weight: 500; }
+  .user-plan { font-size: 11px; color: var(--text3); }
+
+  /* Main content */
+  .dash-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .dash-topbar {
+    height: var(--topbar-h); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 28px; gap: 14px; flex-shrink: 0;
+    background: var(--surface);
+  }
+  .dash-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; flex: 1; }
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; transition: all .15s; }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-accent:hover { background: #ea6c08; }
+  .btn-ghost { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--surface3); color: var(--text); }
+  .btn-blue { background: var(--accent2); color: #fff; }
+  .btn-blue:hover { background: #2563eb; }
+
+  .dash-body { flex: 1; overflow-y: auto; padding: 28px; }
+
+  /* Stats */
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px 20px; display: flex; align-items: flex-start; gap: 14px;
+  }
+  .stat-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .stat-icon.orange { background: rgba(249,115,22,.15); color: var(--accent); }
+  .stat-icon.blue { background: rgba(59,130,246,.15); color: var(--accent2); }
+  .stat-icon.purple { background: rgba(139,92,246,.15); color: var(--accent3); }
+  .stat-label { font-size: 12px; color: var(--text3); margin-bottom: 4px; }
+  .stat-value { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; }
+  .stat-sub { font-size: 11px; color: var(--green); margin-top: 3px; }
+
+  /* Templates section */
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .section-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; }
+  .see-all { font-size: 12.5px; color: var(--accent); cursor: pointer; }
+
+  .templates-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .template-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden; cursor: pointer; transition: all .2s; position: relative;
+  }
+  .template-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(249,115,22,.12); }
+  .template-thumb {
+    height: 110px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;
+  }
+  .template-thumb-inner { width: 100%; height: 100%; transform: scale(.55); transform-origin: top center; pointer-events: none; }
+  .template-badge {
+    position: absolute; top: 8px; right: 8px; background: var(--accent); color: #fff;
+    font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px;
+  }
+  .template-info { padding: 12px 14px; }
+  .template-name { font-weight: 600; font-size: 13px; margin-bottom: 3px; }
+  .template-desc { font-size: 11.5px; color: var(--text3); }
+
+  /* Recent projects */
+  .projects-list { display: flex; flex-direction: column; gap: 8px; }
+  .project-row {
+    display: flex; align-items: center; gap: 14px; padding: 12px 16px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    cursor: pointer; transition: all .15s;
+  }
+  .project-row:hover { border-color: var(--border); background: var(--surface2); }
+  .project-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .project-name { font-size: 13.5px; font-weight: 500; flex: 1; }
+  .project-type { font-size: 12px; color: var(--text3); }
+  .project-date { font-size: 11.5px; color: var(--text3); }
+  .project-open { font-size: 12px; color: var(--accent); opacity: 0; transition: opacity .15s; }
+  .project-row:hover .project-open { opacity: 1; }
+
+  /* ─── TEMPLATE PICKER ─── */
+  #screen-picker { flex-direction: row; }
+  .picker-sidebar { width: var(--sidebar-w); height: 100vh; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+  .picker-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .picker-topbar { height: var(--topbar-h); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 24px; gap: 14px; background: var(--surface); }
+  .picker-search { flex: 1; position: relative; }
+  .picker-search input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px 8px 34px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; }
+  .picker-search input:focus { border-color: var(--accent); }
+  .picker-search svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--text3); }
+  .picker-grid { flex: 1; overflow-y: auto; padding: 24px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-content: start; }
+  .picker-card {
+    background: var(--surface); border: 2px solid var(--border); border-radius: 14px;
+    overflow: hidden; cursor: pointer; transition: all .2s;
+  }
+  .picker-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(249,115,22,.15); }
+  .picker-card.selected { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(249,115,22,.2); }
+  .picker-thumb { height: 160px; overflow: hidden; position: relative; }
+  .picker-thumb-inner { width: 100%; height: 100%; transform: scale(.5); transform-origin: top center; pointer-events: none; overflow: hidden; }
+  .picker-card-info { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; }
+  .picker-card-name { font-weight: 600; font-size: 13.5px; }
+  .picker-card-type { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .picker-open-btn { background: var(--accent); color: #fff; border: none; border-radius: 7px; padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer; opacity: 0; transition: opacity .15s; font-family: 'DM Sans', sans-serif; }
+  .picker-card:hover .picker-open-btn { opacity: 1; }
+
+  /* ─── EDITOR ─── */
+  #screen-editor { flex-direction: column; }
+  .editor-topbar {
+    height: var(--topbar-h); background: var(--surface); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 16px; gap: 10px; flex-shrink: 0;
+  }
+  .editor-logo { display: flex; align-items: center; gap: 8px; margin-right: 8px; }
+  .editor-project-name { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 14px; }
+  .editor-spacer { flex: 1; }
+  .undo-redo { display: flex; gap: 2px; }
+  .icon-btn { width: 32px; height: 32px; border-radius: 7px; border: none; background: transparent; color: var(--text2); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .15s; }
+  .icon-btn:hover { background: var(--surface2); color: var(--text); }
+  .viewport-btns { display: flex; gap: 2px; background: var(--surface2); border-radius: 8px; padding: 3px; }
+  .vp-btn { width: 28px; height: 26px; border-radius: 5px; border: none; background: transparent; color: var(--text3); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .15s; }
+  .vp-btn.active { background: var(--surface3); color: var(--text); }
+
+  .editor-body { flex: 1; display: flex; overflow: hidden; }
+
+  /* Elements panel */
+  .elements-panel {
+    width: 200px; background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; flex-shrink: 0;
+  }
+  .panel-header { padding: 14px 16px 10px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .panel-toggle { width: 20px; height: 20px; border-radius: 5px; border: none; background: var(--surface2); color: var(--text3); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; line-height: 1; }
+  .elements-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; }
+  .el-item {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 9px;
+    padding: 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    cursor: grab; transition: all .15s; user-select: none;
+  }
+  .el-item:hover { background: var(--surface3); border-color: var(--accent); color: var(--accent); }
+  .el-item:active { cursor: grabbing; }
+  .el-item svg { width: 20px; height: 20px; }
+  .el-item span { font-size: 11.5px; font-weight: 500; }
+
+  /* Canvas */
+  .canvas-area { flex: 1; background: #0a0c10; overflow: auto; display: flex; align-items: flex-start; justify-content: center; padding: 24px; }
+  .canvas-frame {
+    background: #fff; border-radius: 8px; width: 1000px; min-height: 600px;
+    box-shadow: 0 20px 80px rgba(0,0,0,.7); position: relative; overflow: hidden;
+    transition: width .3s;
+  }
+  .canvas-frame.tablet { width: 768px; }
+  .canvas-frame.mobile { width: 375px; }
+  .canvas-frame iframe { width: 100%; border: none; display: block; pointer-events: none; }
+  .canvas-frame.editing iframe { pointer-events: none; }
+
+  /* Properties panel */
+  .props-panel { width: 240px; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
+  .props-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .props-section-title { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); margin-bottom: 12px; }
+  .prop-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; gap: 8px; }
+  .prop-label { font-size: 12px; color: var(--text2); flex-shrink: 0; }
+  .prop-input { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 5px 9px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 12px; width: 100%; outline: none; }
+  .prop-input:focus { border-color: var(--accent); }
+  .color-swatch { width: 28px; height: 28px; border-radius: 6px; border: 2px solid var(--border); cursor: pointer; flex-shrink: 0; }
+  .no-selection { padding: 32px 16px; text-align: center; color: var(--text3); font-size: 12.5px; }
+  .no-selection svg { width: 36px; height: 36px; margin: 0 auto 10px; display: block; opacity: .4; }
+
+  /* Edit overlay on canvas elements */
+  .editable-element { position: relative; }
+  .editable-element:hover { outline: 2px dashed rgba(249,115,22,.5); outline-offset: 2px; cursor: pointer; }
+  .editable-element.selected { outline: 2px solid var(--accent) !important; outline-offset: 2px; }
+  .edit-handle {
+    position: absolute; top: -1px; right: -1px; background: var(--accent); color: #fff;
+    font-size: 10px; padding: 2px 7px; border-radius: 0 0 0 6px; cursor: pointer;
+    font-weight: 600; z-index: 100; display: none;
+  }
+  .editable-element.selected .edit-handle { display: block; }
+
+  /* Inline editor popup */
+  .inline-editor {
+    position: fixed; z-index: 9999; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 12px; padding: 16px; width: 320px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.6); display: none;
+  }
+  .inline-editor.visible { display: block; }
+  .inline-editor h4 { font-size: 13px; font-weight: 600; margin-bottom: 12px; color: var(--text); }
+  .inline-editor textarea, .inline-editor input[type="text"] {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 7px;
+    padding: 8px 10px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px;
+    outline: none; resize: vertical; min-height: 60px;
+  }
+  .inline-editor input[type="text"] { min-height: unset; resize: none; }
+  .inline-editor textarea:focus, .inline-editor input[type="text"]:focus { border-color: var(--accent); }
+  .inline-editor-btns { display: flex; gap: 8px; margin-top: 10px; justify-content: flex-end; }
+  .inline-editor-close { position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--text3); cursor: pointer; font-size: 18px; line-height: 1; }
+
+  /* Download modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 10000;
+    display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px);
+  }
+  .modal-overlay.visible { display: flex; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    padding: 28px; width: 420px; max-width: 95vw; position: relative;
+    box-shadow: 0 32px 80px rgba(0,0,0,.8);
+  }
+  .modal h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; margin-bottom: 6px; }
+  .modal p { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+  .modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none; color: var(--text3); cursor: pointer; font-size: 20px; }
+  .download-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .dl-option { background: var(--surface2); border: 2px solid var(--border); border-radius: 10px; padding: 14px; cursor: pointer; transition: all .15s; }
+  .dl-option:hover { border-color: var(--accent); }
+  .dl-option.selected { border-color: var(--accent); background: rgba(249,115,22,.08); }
+  .dl-option-icon { font-size: 24px; margin-bottom: 6px; }
+  .dl-option-name { font-size: 13px; font-weight: 600; }
+  .dl-option-desc { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .progress-bar-wrap { background: var(--surface2); border-radius: 99px; height: 6px; margin: 16px 0 8px; overflow: hidden; display: none; }
+  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; width: 0; transition: width .1s; }
+  .progress-label { font-size: 12px; color: var(--text3); text-align: center; display: none; }
+
+  /* Notification toast */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 10px; padding: 12px 18px;
+    font-size: 13.5px; display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.5); z-index: 99999;
+    transform: translateY(80px); opacity: 0; transition: all .3s;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: rgba(34,197,94,.3); }
+  .toast.success .toast-icon { color: var(--green); }
+  .toast.error { border-color: rgba(239,68,68,.3); }
+  .toast.error .toast-icon { color: var(--red); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 99px; }
+
+  /* ─── TEMPLATES ─── */
+
+  /* Mini template previews (used in dashboard thumbnails) */
+  .tpl-preview { font-family: sans-serif; background: #fff; color: #111; }
+
+  /* ─── Page type labels ─── */
+  .type-badge {
+    display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: .06em;
+    padding: 2px 8px; border-radius: 20px; background: var(--surface3); color: var(--text2);
+    text-transform: uppercase;
+  }
+
+  /* picker nav items */
+  .picker-nav { flex: 1; overflow-y: auto; padding: 12px 10px; }
+  .picker-nav-item {
+    display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px;
+    cursor: pointer; font-size: 13.5px; color: var(--text2); transition: all .15s; margin-bottom: 2px;
+  }
+  .picker-nav-item:hover { background: var(--surface2); color: var(--text); }
+  .picker-nav-item.active { background: rgba(249,115,22,.12); color: var(--accent); }
+
+  /* element drag ghost */
+  .drag-ghost {
+    position: fixed; pointer-events: none; z-index: 99998;
+    background: var(--accent); color: #fff; padding: 6px 12px; border-radius: 8px;
+    font-size: 12px; font-weight: 600; opacity: 0; transition: opacity .15s;
+    transform: translate(-50%, -50%);
+  }
+  .dragging .drag-ghost { opacity: 1; }
+
+  /* section divider */
+  .divider-line { height: 1px; background: var(--border); margin: 4px 0; }
+
+  /* selected section highlight in canvas */
+  .canvas-section-selected { outline: 2px solid var(--accent); outline-offset: -2px; position: relative; }
+
+  /* image placeholder */
+  .img-placeholder {
+    background: var(--surface3); border: 2px dashed var(--border);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 6px; cursor: pointer; color: var(--text3);
+    font-size: 12px; transition: all .15s;
+  }
+  .img-placeholder:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* tab bar (in picker) */
+  .tab-bar { display: flex; gap: 4px; padding: 0 24px; border-bottom: 1px solid var(--border); background: var(--surface); }
+  .tab-item { padding: 12px 14px; font-size: 13px; cursor: pointer; color: var(--text3); border-bottom: 2px solid transparent; transition: all .15s; }
+  .tab-item:hover { color: var(--text); }
+  .tab-item.active { color: var(--accent); border-bottom-color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     SCREEN 1: DASHBOARD
+══════════════════════════════════════════ -->
+<div id="screen-dashboard" class="screen active">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">SC</div>
+      <div class="logo-text">SiteCanvas</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Menu</div>
+      <div class="nav-item active" onclick="showDashboard()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" onclick="openPicker('webpage')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        Webpage
+      </div>
+      <div class="nav-item" onclick="openPicker('blog')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+        Blog Post
+      </div>
+      <div class="nav-item" onclick="openPicker('landing')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Landing Page
+      </div>
+      <div class="nav-item" onclick="openPicker('portfolio')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+        Portfolio
+      </div>
+      <div class="nav-item" onclick="openPicker('ecommerce')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        Product Page
+      </div>
+      <div class="divider-line" style="margin: 8px 0;"></div>
+      <div class="nav-label">Settings</div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 0 0 4.93 19.07M19.07 4.93L22 2M4.93 19.07L2 22M19.07 19.07A10 10 0 0 1 4.93 4.93M19.07 19.07L22 22M4.93 4.93L2 2"/></svg>
+        Settings
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="avatar">U</div>
+        <div class="user-info">
+          <div class="user-name">User</div>
+          <div class="user-plan">Free Plan</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="dash-main">
+    <div class="dash-topbar">
+      <div class="dash-title">Dashboard</div>
+      <button class="btn btn-ghost" onclick="openPicker('webpage')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Page
+      </button>
+      <button class="btn btn-accent" onclick="openPicker('webpage')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
+        Open Builder
+      </button>
+    </div>
+    <div class="dash-body">
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon orange">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </div>
+          <div>
+            <div class="stat-label">Total Sites</div>
+            <div class="stat-value">3</div>
+            <div class="stat-sub">↑ 1 this week</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+          <div>
+            <div class="stat-label">Page Views</div>
+            <div class="stat-value">15.4K</div>
+            <div class="stat-sub">↑ 12% this month</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          </div>
+          <div>
+            <div class="stat-label">HTML Exports</div>
+            <div class="stat-value">8</div>
+            <div class="stat-sub">↑ 3 this week</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick start templates -->
+      <div class="section-header">
+        <div class="section-title">Start from a Template</div>
+        <div class="see-all" onclick="openPicker('all')">See all →</div>
+      </div>
+      <div class="templates-grid">
+        <div class="template-card" onclick="openPicker('landing')">
+          <div class="template-thumb" style="background: linear-gradient(135deg,#1a1a2e,#16213e);">
+            <div style="text-align:center;padding:16px;color:#fff;">
+              <div style="font-weight:800;font-size:18px;letter-spacing:-0.5px;">Landing Page</div>
+              <div style="font-size:10px;opacity:.6;margin-top:4px;">Hero + Features + CTA</div>
+              <div style="width:60px;height:4px;background:#f97316;border-radius:99px;margin:8px auto;"></div>
+            </div>
+            <div class="template-badge">HOT</div>
+          </div>
+          <div class="template-info">
+            <div class="template-name">Minimal Landing</div>
+            <div class="template-desc">Clean hero with CTA</div>
+          </div>
+        </div>
+        <div class="template-card" onclick="openPicker('blog')">
+          <div class="template-thumb" style="background: linear-gradient(135deg,#0f2027,#203a43);">
+            <div style="text-align:center;padding:16px;color:#fff;">
+              <div style="font-weight:800;font-size:18px;">Blog</div>
+              <div style="font-size:10px;opacity:.6;margin-top:4px;">Articles + Sidebar</div>
+              <div style="display:flex;gap:4px;justify-content:center;margin-top:8px;">
+                <div style="width:24px;height:24px;background:rgba(255,255,255,.1);border-radius:4px;"></div>
+                <div style="width:24px;height:24px;background:rgba(255,255,255,.1);border-radius:4px;"></div>
+                <div style="width:24px;height:24px;background:rgba(255,255,255,.1);border-radius:4px;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="template-info">
+            <div class="template-name">Blog Layout</div>
+            <div class="template-desc">Editorial blog style</div>
+          </div>
+        </div>
+        <div class="template-card" onclick="openPicker('portfolio')">
+          <div class="template-thumb" style="background: linear-gradient(135deg,#1a1a1a,#2d2d2d);">
+            <div style="text-align:center;padding:16px;color:#fff;">
+              <div style="font-weight:800;font-size:18px;">Portfolio</div>
+              <div style="font-size:10px;opacity:.6;margin-top:4px;">Work + About</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:8px;width:48px;margin-left:auto;margin-right:auto;">
+                <div style="height:14px;background:rgba(255,255,255,.12);border-radius:2px;"></div>
+                <div style="height:14px;background:rgba(255,255,255,.12);border-radius:2px;"></div>
+                <div style="height:14px;background:rgba(255,255,255,.12);border-radius:2px;"></div>
+                <div style="height:14px;background:rgba(255,255,255,.12);border-radius:2px;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="template-info">
+            <div class="template-name">Portfolio Showcase</div>
+            <div class="template-desc">Grid-based work display</div>
+          </div>
+        </div>
+        <div class="template-card" onclick="openPicker('ecommerce')">
+          <div class="template-thumb" style="background: linear-gradient(135deg,#0d2137,#1a3a5c);">
+            <div style="text-align:center;padding:16px;color:#fff;">
+              <div style="font-weight:800;font-size:18px;">E-Commerce</div>
+              <div style="font-size:10px;opacity:.6;margin-top:4px;">Products + Cart</div>
+              <div style="width:36px;height:36px;background:rgba(249,115,22,.3);border-radius:50%;margin:6px auto;display:flex;align-items:center;justify-content:center;font-size:16px;">🛒</div>
+            </div>
+          </div>
+          <div class="template-info">
+            <div class="template-name">Product Page</div>
+            <div class="template-desc">Modern shop layout</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Projects -->
+      <div class="section-header">
+        <div class="section-title">Recent Projects</div>
+        <div class="see-all">Manage →</div>
+      </div>
+      <div class="projects-list" id="recent-projects">
+        <div class="project-row" onclick="openEditorFromRecent('Ecom site','ecommerce')">
+          <div class="project-dot" style="background:#f97316"></div>
+          <div class="project-name">Ecom site</div>
+          <div class="project-type"><span class="type-badge">E-Commerce</span></div>
+          <div class="project-date">7 hours ago</div>
+          <div class="project-open">Open →</div>
+        </div>
+        <div class="project-row" onclick="openEditorFromRecent('My Blog','blog')">
+          <div class="project-dot" style="background:#3b82f6"></div>
+          <div class="project-name">My Blog</div>
+          <div class="project-type"><span class="type-badge">Blog</span></div>
+          <div class="project-date">Yesterday</div>
+          <div class="project-open">Open →</div>
+        </div>
+        <div class="project-row" onclick="openEditorFromRecent('My Website','landing')">
+          <div class="project-dot" style="background:#8b5cf6"></div>
+          <div class="project-name">My Website</div>
+          <div class="project-type"><span class="type-badge">Landing Page</span></div>
+          <div class="project-date">3 days ago</div>
+          <div class="project-open">Open →</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     SCREEN 2: TEMPLATE PICKER
+══════════════════════════════════════════ -->
+<div id="screen-picker" class="screen">
+  <aside class="picker-sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">SC</div>
+      <div class="logo-text">SiteCanvas</div>
+    </div>
+    <nav class="picker-nav">
+      <div class="nav-label">Page Types</div>
+      <div class="picker-nav-item active" data-type="all" onclick="filterTemplates('all',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        All Templates
+      </div>
+      <div class="picker-nav-item" data-type="webpage" onclick="filterTemplates('webpage',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        Webpage
+      </div>
+      <div class="picker-nav-item" data-type="blog" onclick="filterTemplates('blog',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Blog Post
+      </div>
+      <div class="picker-nav-item" data-type="landing" onclick="filterTemplates('landing',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Landing Page
+      </div>
+      <div class="picker-nav-item" data-type="portfolio" onclick="filterTemplates('portfolio',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+        Portfolio
+      </div>
+      <div class="picker-nav-item" data-type="ecommerce" onclick="filterTemplates('ecommerce',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        Product Page
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn btn-ghost" style="width:100%;" onclick="showDashboard()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Back to Dashboard
+      </button>
+    </div>
+  </aside>
+  <div class="picker-main">
+    <div class="picker-topbar">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;">Select a Template</div>
+      <div class="picker-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search templates…" id="search-input" oninput="searchTemplates(this.value)">
+      </div>
+    </div>
+    <div class="tab-bar" id="picker-tabs">
+      <div class="tab-item active" onclick="filterTemplates('all',null,this)">All</div>
+      <div class="tab-item" onclick="filterTemplates('webpage',null,this)">Webpage</div>
+      <div class="tab-item" onclick="filterTemplates('blog',null,this)">Blog</div>
+      <div class="tab-item" onclick="filterTemplates('landing',null,this)">Landing</div>
+      <div class="tab-item" onclick="filterTemplates('portfolio',null,this)">Portfolio</div>
+      <div class="tab-item" onclick="filterTemplates('ecommerce',null,this)">E-Commerce</div>
+    </div>
+    <div class="picker-grid" id="picker-grid">
+      <!-- filled by JS -->
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     SCREEN 3: EDITOR
+══════════════════════════════════════════ -->
+<div id="screen-editor" class="screen">
+  <!-- Top bar -->
+  <div class="editor-topbar">
+    <button class="icon-btn" onclick="showDashboard()" title="Back to Dashboard">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    </button>
+    <div class="editor-logo">
+      <div class="logo-mark" style="width:26px;height:26px;font-size:11px;">SC</div>
+    </div>
+    <div class="editor-project-name" id="editor-project-name">My Project</div>
+    <div class="editor-spacer"></div>
+    <div class="undo-redo">
+      <button class="icon-btn" onclick="undoAction()" title="Undo">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
+      </button>
+      <button class="icon-btn" onclick="redoAction()" title="Redo">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/></svg>
+      </button>
+    </div>
+    <div class="viewport-btns">
+      <button class="vp-btn active" onclick="setViewport('desktop',this)" title="Desktop">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      </button>
+      <button class="vp-btn" onclick="setViewport('tablet',this)" title="Tablet">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      </button>
+      <button class="vp-btn" onclick="setViewport('mobile',this)" title="Mobile">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      </button>
+    </div>
+    <button class="btn btn-ghost" onclick="previewPage()" style="gap:6px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      Preview
+    </button>
+    <button class="btn btn-accent" onclick="openDownloadModal()" style="gap:6px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download HTML
+    </button>
+  </div>
+
+  <!-- Editor Body -->
+  <div class="editor-body">
+    <!-- Elements panel -->
+    <div class="elements-panel" id="elements-panel">
+      <div class="panel-header">
+        Elements
+        <button class="panel-toggle" onclick="toggleElementsPanel()">‹</button>
+      </div>
+      <div class="elements-grid">
+        <div class="el-item" draggable="true" data-element="text" ondragstart="startDrag('text',event)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+          <span>Text</span>
+        </div>
+        <div class="el-item" draggable="true" data-element="button" ondragstart="startDrag('button',event)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="8" width="18" height="8" rx="4"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+          <span>Button</span>
+        </div>
+        <div class="el-item" draggable="true" data-element="image" ondragstart="startDrag('image',event)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Image</span>
+        </div>
+        <div class="el-item" draggable="true" data-element="header" ondragstart="startDrag('header',event)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 12h16"/><path d="M4 18h8"/></svg>
+          <span>Header</span>
+        </div>
+        <div class="el-item" draggable="true" data-element="section" ondragstart="startDrag('section',event)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+          <span>Section</span>
+        </div>
+        <div class="el-item" draggable="true" data-element="divider" ondragstart="startDrag('divider',event)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/></svg>
+          <span>Divider</span>
+        </div>
+        <div class="el-item" draggable="true" data-element="video" ondragstart="startDrag('video',event)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          <span>Video</span>
+        </div>
+        <div class="el-item" draggable="true" data-element="columns" ondragstart="startDrag('columns',event)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="18" rx="1"/><rect x="13" y="3" width="8" height="18" rx="1"/></svg>
+          <span>Columns</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Canvas -->
+    <div class="canvas-area" id="canvas-area" ondragover="allowDrop(event)" ondrop="dropElement(event)">
+      <div class="canvas-frame" id="canvas-frame">
+        <div id="canvas-content" style="min-height:600px;">
+          <!-- Template is injected here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Properties panel -->
+    <div class="props-panel" id="props-panel">
+      <div class="panel-header">Properties</div>
+      <div id="props-content">
+        <div class="no-selection">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg>
+          Click any element in the canvas to edit its properties
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     INLINE EDITOR
+══════════════════════════════════════════ -->
+<div class="inline-editor" id="inline-editor">
+  <button class="inline-editor-close" onclick="closeInlineEditor()">×</button>
+  <h4 id="inline-editor-title">Edit Text</h4>
+  <div id="inline-editor-body"></div>
+  <div class="inline-editor-btns">
+    <button class="btn btn-ghost" style="padding:6px 12px;" onclick="closeInlineEditor()">Cancel</button>
+    <button class="btn btn-accent" style="padding:6px 14px;" onclick="applyInlineEdit()">Apply</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     DOWNLOAD MODAL
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="download-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeDownloadModal()">×</button>
+    <h3>Download Your Page</h3>
+    <p>Your page will be exported as a self-contained HTML file, ready to open in any browser.</p>
+    <div class="download-options">
+      <div class="dl-option selected" id="dl-html" onclick="selectDownload('html')">
+        <div class="dl-option-icon">📄</div>
+        <div class="dl-option-name">HTML File</div>
+        <div class="dl-option-desc">Single .html file with inline CSS & JS</div>
+      </div>
+      <div class="dl-option" id="dl-zip" onclick="selectDownload('zip')">
+        <div class="dl-option-icon">📦</div>
+        <div class="dl-option-name">HTML + CSS</div>
+        <div class="dl-option-desc">Separate stylesheet (advanced)</div>
+      </div>
+    </div>
+    <button class="btn btn-accent" style="width:100%;justify-content:center;padding:12px;" onclick="downloadPage()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download Now
+    </button>
+    <div class="progress-bar-wrap" id="dl-progress-wrap"><div class="progress-bar" id="dl-progress-bar"></div></div>
+    <div class="progress-label" id="dl-progress-label">Preparing your file…</div>
+  </div>
+</div>
+
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span class="toast-icon">✓</span>
+  <span id="toast-msg">Done!</span>
+</div>
+
+<!-- Drag ghost -->
+<div class="drag-ghost" id="drag-ghost">Drop to add</div>
+
+
+<script>
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let currentTemplate = null;
+let currentProjectName = 'My Project';
+let undoStack = [];
+let redoStack = [];
+let selectedElement = null;
+let dragElementType = null;
+let downloadFormat = 'html';
+let panelCollapsed = false;
+
+// ═══════════════════════════════════════════════
+// TEMPLATES DATA
+// ═══════════════════════════════════════════════
+const TEMPLATES = [
+  {
+    id: 'landing-minimal',
+    name: 'Minimal Landing',
+    type: 'landing',
+    desc: 'Clean hero with CTA and features',
+    color: '#f97316',
+    html: `
+      <div id="sc-page" style="font-family:'Segoe UI',sans-serif;color:#111;background:#fff;">
+        <!-- NAV -->
+        <nav style="display:flex;align-items:center;justify-content:space-between;padding:18px 48px;background:#fff;border-bottom:1px solid #eee;" class="sc-editable" data-label="Navigation">
+          <div style="font-weight:800;font-size:20px;color:#f97316;" class="sc-editable" data-label="Logo">BrandName</div>
+          <div style="display:flex;gap:28px;">
+            <a href="#" style="color:#555;text-decoration:none;font-size:14px;" class="sc-editable" data-label="Nav Link">Features</a>
+            <a href="#" style="color:#555;text-decoration:none;font-size:14px;" class="sc-editable" data-label="Nav Link">Pricing</a>
+            <a href="#" style="color:#555;text-decoration:none;font-size:14px;" class="sc-editable" data-label="Nav Link">About</a>
+          </div>
+          <button style="background:#f97316;color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;" class="sc-editable" data-label="CTA Button">Get Started</button>
+        </nav>
+        <!-- HERO -->
+        <section style="text-align:center;padding:96px 48px 80px;background:linear-gradient(180deg,#fff8f3 0%,#fff 100%);" class="sc-editable" data-label="Hero Section">
+          <div style="display:inline-block;background:#fff3e8;color:#f97316;font-size:12px;font-weight:700;padding:5px 14px;border-radius:99px;margin-bottom:20px;letter-spacing:.06em;" class="sc-editable" data-label="Badge">✦ INTRODUCING SITECANVAS</div>
+          <h1 style="font-size:56px;font-weight:800;line-height:1.15;letter-spacing:-2px;max-width:700px;margin:0 auto 24px;" class="sc-editable" data-label="Headline">Build Beautiful Websites Without Code</h1>
+          <p style="font-size:18px;color:#666;max-width:520px;margin:0 auto 40px;line-height:1.7;" class="sc-editable" data-label="Subheadline">Design, customize, and publish stunning web pages with our drag-and-drop builder. No coding required.</p>
+          <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+            <button style="background:#f97316;color:#fff;border:none;padding:14px 32px;border-radius:10px;font-weight:700;font-size:16px;cursor:pointer;" class="sc-editable" data-label="Primary Button">Start Building Free</button>
+            <button style="background:#fff;color:#111;border:2px solid #ddd;padding:14px 28px;border-radius:10px;font-weight:600;font-size:16px;cursor:pointer;" class="sc-editable" data-label="Secondary Button">Watch Demo →</button>
+          </div>
+          <p style="margin-top:20px;font-size:13px;color:#aaa;" class="sc-editable" data-label="Sub-note">Free forever · No credit card required</p>
+        </section>
+        <!-- FEATURES -->
+        <section style="padding:80px 48px;background:#fff;" class="sc-editable" data-label="Features Section">
+          <h2 style="text-align:center;font-size:36px;font-weight:800;margin-bottom:12px;letter-spacing:-1px;" class="sc-editable" data-label="Features Title">Everything You Need</h2>
+          <p style="text-align:center;color:#777;font-size:16px;max-width:480px;margin:0 auto 56px;" class="sc-editable" data-label="Features Subtitle">Powerful tools that make website creation simple and fun.</p>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:32px;max-width:900px;margin:0 auto;">
+            <div style="text-align:center;padding:32px 24px;border:1px solid #f0f0f0;border-radius:16px;" class="sc-editable" data-label="Feature Card">
+              <div style="font-size:36px;margin-bottom:16px;">🎨</div>
+              <h3 style="font-size:18px;font-weight:700;margin-bottom:10px;" class="sc-editable" data-label="Feature Title">Visual Editor</h3>
+              <p style="font-size:14px;color:#777;line-height:1.6;" class="sc-editable" data-label="Feature Text">Drag and drop elements to build any layout you imagine.</p>
+            </div>
+            <div style="text-align:center;padding:32px 24px;border:1px solid #f0f0f0;border-radius:16px;" class="sc-editable" data-label="Feature Card">
+              <div style="font-size:36px;margin-bottom:16px;">⚡</div>
+              <h3 style="font-size:18px;font-weight:700;margin-bottom:10px;" class="sc-editable" data-label="Feature Title">Fast & Lightweight</h3>
+              <p style="font-size:14px;color:#777;line-height:1.6;" class="sc-editable" data-label="Feature Text">Exported pages are clean, fast HTML files.</p>
+            </div>
+            <div style="text-align:center;padding:32px 24px;border:1px solid #f0f0f0;border-radius:16px;" class="sc-editable" data-label="Feature Card">
+              <div style="font-size:36px;margin-bottom:16px;">📱</div>
+              <h3 style="font-size:18px;font-weight:700;margin-bottom:10px;" class="sc-editable" data-label="Feature Title">Responsive Design</h3>
+              <p style="font-size:14px;color:#777;line-height:1.6;" class="sc-editable" data-label="Feature Text">Your pages look great on every screen size.</p>
+            </div>
+          </div>
+        </section>
+        <!-- CTA -->
+        <section style="background:#f97316;padding:80px 48px;text-align:center;" class="sc-editable" data-label="CTA Section">
+          <h2 style="color:#fff;font-size:40px;font-weight:800;margin-bottom:16px;letter-spacing:-1px;" class="sc-editable" data-label="CTA Headline">Ready to Build Something Amazing?</h2>
+          <p style="color:rgba(255,255,255,.85);font-size:17px;margin-bottom:36px;" class="sc-editable" data-label="CTA Subtext">Join thousands of creators building with SiteCanvas.</p>
+          <button style="background:#fff;color:#f97316;border:none;padding:16px 40px;border-radius:10px;font-weight:800;font-size:17px;cursor:pointer;" class="sc-editable" data-label="CTA Button">Get Started for Free</button>
+        </section>
+        <!-- FOOTER -->
+        <footer style="background:#111;color:#888;text-align:center;padding:28px;font-size:13px;" class="sc-editable" data-label="Footer">
+          © 2025 BrandName · Built with SiteCanvas
+        </footer>
+      </div>
+    `
+  },
+  {
+    id: 'blog-editorial',
+    name: 'Blog Layout',
+    type: 'blog',
+    desc: 'Editorial blog with articles grid',
+    color: '#3b82f6',
+    html: `
+      <div id="sc-page" style="font-family:'Georgia',serif;color:#111;background:#fafafa;">
+        <header style="background:#fff;border-bottom:3px solid #111;padding:20px 48px;display:flex;align-items:center;justify-content:space-between;" class="sc-editable" data-label="Blog Header">
+          <div>
+            <div style="font-size:28px;font-weight:900;letter-spacing:-1px;" class="sc-editable" data-label="Blog Name">The Daily Brief</div>
+            <div style="font-size:12px;color:#888;font-style:italic;margin-top:2px;" class="sc-editable" data-label="Tagline">Insights, ideas & inspiration</div>
+          </div>
+          <nav style="display:flex;gap:24px;font-family:'Segoe UI',sans-serif;">
+            <a href="#" style="font-size:13px;color:#333;text-decoration:none;font-weight:600;" class="sc-editable" data-label="Nav">Tech</a>
+            <a href="#" style="font-size:13px;color:#333;text-decoration:none;font-weight:600;" class="sc-editable" data-label="Nav">Design</a>
+            <a href="#" style="font-size:13px;color:#333;text-decoration:none;font-weight:600;" class="sc-editable" data-label="Nav">Business</a>
+            <a href="#" style="font-size:13px;color:#333;text-decoration:none;font-weight:600;" class="sc-editable" data-label="Nav">Subscribe</a>
+          </nav>
+        </header>
+        <!-- Featured -->
+        <div style="max-width:1100px;margin:0 auto;padding:40px 24px;">
+          <div style="background:#111;color:#fff;border-radius:16px;padding:48px;margin-bottom:40px;position:relative;overflow:hidden;" class="sc-editable" data-label="Featured Post">
+            <div style="position:absolute;top:0;right:0;width:300px;height:100%;background:linear-gradient(135deg,rgba(59,130,246,.3),rgba(139,92,246,.3));"></div>
+            <span style="font-size:11px;font-weight:700;letter-spacing:.1em;color:#3b82f6;text-transform:uppercase;font-family:sans-serif;" class="sc-editable" data-label="Category">FEATURED · DESIGN</span>
+            <h1 style="font-size:40px;font-weight:900;line-height:1.2;margin:14px 0 18px;letter-spacing:-1px;max-width:600px;" class="sc-editable" data-label="Featured Title">The Future of Web Design Is Already Here</h1>
+            <p style="font-size:16px;color:#aaa;max-width:560px;line-height:1.7;font-family:sans-serif;" class="sc-editable" data-label="Featured Excerpt">Exploring how AI-powered tools are changing the way designers and developers collaborate on the web.</p>
+            <div style="display:flex;align-items:center;gap:16px;margin-top:28px;font-family:sans-serif;">
+              <div style="width:36px;height:36px;border-radius:50%;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;">A</div>
+              <div>
+                <div style="font-size:13px;font-weight:600;" class="sc-editable" data-label="Author">Alex Johnson</div>
+                <div style="font-size:12px;color:#888;" class="sc-editable" data-label="Date">June 15, 2025 · 8 min read</div>
+              </div>
+              <button style="margin-left:auto;background:#3b82f6;color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;" class="sc-editable" data-label="Read Button">Read Article →</button>
+            </div>
+          </div>
+          <!-- Articles Grid -->
+          <h2 style="font-size:22px;font-weight:900;margin-bottom:24px;font-family:sans-serif;letter-spacing:-.5px;" class="sc-editable" data-label="Section Title">Latest Articles</h2>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;">
+            <article style="background:#fff;border-radius:12px;overflow:hidden;border:1px solid #eee;" class="sc-editable" data-label="Article Card">
+              <div style="height:140px;background:linear-gradient(135deg,#667eea,#764ba2);"></div>
+              <div style="padding:20px;">
+                <span style="font-size:10px;font-weight:700;color:#3b82f6;letter-spacing:.08em;font-family:sans-serif;" class="sc-editable" data-label="Tag">TECHNOLOGY</span>
+                <h3 style="font-size:17px;font-weight:800;margin:8px 0;line-height:1.35;" class="sc-editable" data-label="Title">How AI is Reshaping Creative Work</h3>
+                <p style="font-size:13px;color:#666;font-family:sans-serif;line-height:1.6;" class="sc-editable" data-label="Excerpt">A deep dive into the tools changing how we create.</p>
+                <div style="margin-top:16px;font-size:12px;color:#aaa;font-family:sans-serif;" class="sc-editable" data-label="Meta">Jun 12 · 5 min read</div>
+              </div>
+            </article>
+            <article style="background:#fff;border-radius:12px;overflow:hidden;border:1px solid #eee;" class="sc-editable" data-label="Article Card">
+              <div style="height:140px;background:linear-gradient(135deg,#f97316,#fbbf24);"></div>
+              <div style="padding:20px;">
+                <span style="font-size:10px;font-weight:700;color:#f97316;letter-spacing:.08em;font-family:sans-serif;" class="sc-editable" data-label="Tag">DESIGN</span>
+                <h3 style="font-size:17px;font-weight:800;margin:8px 0;line-height:1.35;" class="sc-editable" data-label="Title">Typography Trends for 2025</h3>
+                <p style="font-size:13px;color:#666;font-family:sans-serif;line-height:1.6;" class="sc-editable" data-label="Excerpt">Bold choices that define the modern aesthetic.</p>
+                <div style="margin-top:16px;font-size:12px;color:#aaa;font-family:sans-serif;" class="sc-editable" data-label="Meta">Jun 10 · 4 min read</div>
+              </div>
+            </article>
+            <article style="background:#fff;border-radius:12px;overflow:hidden;border:1px solid #eee;" class="sc-editable" data-label="Article Card">
+              <div style="height:140px;background:linear-gradient(135deg,#06b6d4,#22c55e);"></div>
+              <div style="padding:20px;">
+                <span style="font-size:10px;font-weight:700;color:#06b6d4;letter-spacing:.08em;font-family:sans-serif;" class="sc-editable" data-label="Tag">BUSINESS</span>
+                <h3 style="font-size:17px;font-weight:800;margin:8px 0;line-height:1.35;" class="sc-editable" data-label="Title">Building a Personal Brand Online</h3>
+                <p style="font-size:13px;color:#666;font-family:sans-serif;line-height:1.6;" class="sc-editable" data-label="Excerpt">Step-by-step guide to standing out in 2025.</p>
+                <div style="margin-top:16px;font-size:12px;color:#aaa;font-family:sans-serif;" class="sc-editable" data-label="Meta">Jun 8 · 6 min read</div>
+              </div>
+            </article>
+          </div>
+        </div>
+        <footer style="background:#111;color:#888;text-align:center;padding:28px;font-size:13px;font-family:sans-serif;" class="sc-editable" data-label="Footer">© 2025 The Daily Brief</footer>
+      </div>
+    `
+  },
+  {
+    id: 'portfolio-dark',
+    name: 'Portfolio Showcase',
+    type: 'portfolio',
+    desc: 'Grid-based dark portfolio',
+    color: '#8b5cf6',
+    html: `
+      <div id="sc-page" style="font-family:'Segoe UI',sans-serif;color:#fff;background:#0a0a0a;">
+        <nav style="padding:20px 48px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.07);" class="sc-editable" data-label="Navigation">
+          <div style="font-size:18px;font-weight:800;letter-spacing:-0.5px;" class="sc-editable" data-label="Name">John Doe</div>
+          <div style="display:flex;gap:28px;">
+            <a href="#" style="color:#888;text-decoration:none;font-size:14px;transition:.15s;" class="sc-editable" data-label="Nav Link">Work</a>
+            <a href="#" style="color:#888;text-decoration:none;font-size:14px;" class="sc-editable" data-label="Nav Link">About</a>
+            <a href="#" style="color:#888;text-decoration:none;font-size:14px;" class="sc-editable" data-label="Nav Link">Resume</a>
+          </div>
+          <a href="mailto:hello@johndoe.com" style="background:#8b5cf6;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;" class="sc-editable" data-label="Contact Button">Hire Me</a>
+        </nav>
+        <!-- Hero -->
+        <section style="padding:96px 48px 80px;max-width:900px;margin:0 auto;" class="sc-editable" data-label="Hero Section">
+          <div style="display:inline-block;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);color:#a78bfa;font-size:12px;font-weight:700;padding:5px 14px;border-radius:99px;margin-bottom:24px;letter-spacing:.06em;" class="sc-editable" data-label="Status Badge">✦ AVAILABLE FOR WORK</div>
+          <h1 style="font-size:64px;font-weight:800;line-height:1.1;letter-spacing:-3px;margin-bottom:24px;" class="sc-editable" data-label="Hero Headline">Creative Designer<br>&amp; Developer</h1>
+          <p style="font-size:18px;color:#777;max-width:560px;line-height:1.7;margin-bottom:40px;" class="sc-editable" data-label="Bio">I craft beautiful digital experiences — from brand identities to full-stack applications. Turning ideas into pixels since 2018.</p>
+          <div style="display:flex;gap:14px;align-items:center;">
+            <button style="background:#8b5cf6;color:#fff;border:none;padding:13px 28px;border-radius:9px;font-weight:700;font-size:15px;cursor:pointer;" class="sc-editable" data-label="CTA Button">View My Work</button>
+            <button style="background:transparent;color:#888;border:1px solid rgba(255,255,255,.1);padding:13px 24px;border-radius:9px;font-size:15px;cursor:pointer;" class="sc-editable" data-label="Secondary Button">Download CV</button>
+          </div>
+        </section>
+        <!-- Work grid -->
+        <section style="padding:0 48px 80px;" class="sc-editable" data-label="Work Section">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;">
+            <h2 style="font-size:24px;font-weight:800;letter-spacing:-.5px;" class="sc-editable" data-label="Section Title">Selected Work</h2>
+            <a href="#" style="font-size:14px;color:#8b5cf6;text-decoration:none;" class="sc-editable" data-label="View All">View All →</a>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;">
+            <div style="border-radius:16px;overflow:hidden;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);" class="sc-editable" data-label="Project Card">
+              <div style="height:200px;background:linear-gradient(135deg,#8b5cf6,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:40px;">🎨</div>
+              <div style="padding:20px;">
+                <div style="font-size:11px;font-weight:700;color:#8b5cf6;letter-spacing:.07em;margin-bottom:8px;" class="sc-editable" data-label="Type">BRANDING</div>
+                <div style="font-size:18px;font-weight:700;margin-bottom:8px;" class="sc-editable" data-label="Project Name">Lumio Brand Identity</div>
+                <div style="font-size:13px;color:#666;" class="sc-editable" data-label="Project Desc">Complete visual identity for a fintech startup</div>
+              </div>
+            </div>
+            <div style="border-radius:16px;overflow:hidden;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);" class="sc-editable" data-label="Project Card">
+              <div style="height:200px;background:linear-gradient(135deg,#f97316,#ef4444);display:flex;align-items:center;justify-content:center;font-size:40px;">🚀</div>
+              <div style="padding:20px;">
+                <div style="font-size:11px;font-weight:700;color:#f97316;letter-spacing:.07em;margin-bottom:8px;" class="sc-editable" data-label="Type">WEB APP</div>
+                <div style="font-size:18px;font-weight:700;margin-bottom:8px;" class="sc-editable" data-label="Project Name">Velocity Dashboard</div>
+                <div style="font-size:13px;color:#666;" class="sc-editable" data-label="Project Desc">Real-time analytics platform for SaaS companies</div>
+              </div>
+            </div>
+            <div style="border-radius:16px;overflow:hidden;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);" class="sc-editable" data-label="Project Card">
+              <div style="height:200px;background:linear-gradient(135deg,#06b6d4,#22c55e);display:flex;align-items:center;justify-content:center;font-size:40px;">📱</div>
+              <div style="padding:20px;">
+                <div style="font-size:11px;font-weight:700;color:#06b6d4;letter-spacing:.07em;margin-bottom:8px;" class="sc-editable" data-label="Type">MOBILE APP</div>
+                <div style="font-size:18px;font-weight:700;margin-bottom:8px;" class="sc-editable" data-label="Project Name">Bloom Wellness App</div>
+                <div style="font-size:13px;color:#666;" class="sc-editable" data-label="Project Desc">Mindfulness app with 50K+ downloads</div>
+              </div>
+            </div>
+            <div style="border-radius:16px;overflow:hidden;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);" class="sc-editable" data-label="Project Card">
+              <div style="height:200px;background:linear-gradient(135deg,#ec4899,#a855f7);display:flex;align-items:center;justify-content:center;font-size:40px;">🛍</div>
+              <div style="padding:20px;">
+                <div style="font-size:11px;font-weight:700;color:#ec4899;letter-spacing:.07em;margin-bottom:8px;" class="sc-editable" data-label="Type">E-COMMERCE</div>
+                <div style="font-size:18px;font-weight:700;margin-bottom:8px;" class="sc-editable" data-label="Project Name">Luxe Store Redesign</div>
+                <div style="font-size:13px;color:#666;" class="sc-editable" data-label="Project Desc">Conversion-focused redesign +40% revenue</div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <footer style="border-top:1px solid rgba(255,255,255,.07);padding:28px 48px;display:flex;align-items:center;justify-content:space-between;font-size:13px;color:#555;" class="sc-editable" data-label="Footer">
+          <span class="sc-editable" data-label="Footer Text">© 2025 John Doe</span>
+          <div style="display:flex;gap:20px;">
+            <a href="#" style="color:#555;text-decoration:none;" class="sc-editable" data-label="Social">Twitter</a>
+            <a href="#" style="color:#555;text-decoration:none;" class="sc-editable" data-label="Social">GitHub</a>
+            <a href="#" style="color:#555;text-decoration:none;" class="sc-editable" data-label="Social">LinkedIn</a>
+          </div>
+        </footer>
+      </div>
+    `
+  },
+  {
+    id: 'ecommerce-product',
+    name: 'Product Page',
+    type: 'ecommerce',
+    desc: 'Modern e-commerce product listing',
+    color: '#06b6d4',
+    html: `
+      <div id="sc-page" style="font-family:'Segoe UI',sans-serif;color:#111;background:#fff;">
+        <header style="padding:16px 48px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eee;background:#fff;" class="sc-editable" data-label="Store Header">
+          <div style="font-size:22px;font-weight:900;letter-spacing:-1px;" class="sc-editable" data-label="Store Name">LUXE<span style="color:#06b6d4;">SHOP</span></div>
+          <nav style="display:flex;gap:24px;">
+            <a href="#" style="font-size:14px;color:#555;text-decoration:none;" class="sc-editable" data-label="Nav">Men</a>
+            <a href="#" style="font-size:14px;color:#555;text-decoration:none;" class="sc-editable" data-label="Nav">Women</a>
+            <a href="#" style="font-size:14px;color:#555;text-decoration:none;" class="sc-editable" data-label="Nav">Sale</a>
+          </nav>
+          <div style="display:flex;gap:12px;align-items:center;">
+            <span style="font-size:18px;cursor:pointer;">🔍</span>
+            <span style="font-size:18px;cursor:pointer;">♡</span>
+            <span style="font-size:18px;cursor:pointer;position:relative;">🛒<span style="position:absolute;top:-4px;right:-6px;background:#f97316;color:#fff;border-radius:50%;width:16px;height:16px;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:700;">3</span></span>
+          </div>
+        </header>
+        <!-- Product -->
+        <div style="max-width:1100px;margin:0 auto;padding:40px 24px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-bottom:64px;">
+            <!-- Images -->
+            <div>
+              <div style="background:linear-gradient(135deg,#f0f9ff,#dbeafe);border-radius:16px;height:420px;display:flex;align-items:center;justify-content:center;font-size:80px;margin-bottom:12px;" class="sc-editable" data-label="Product Image">👟</div>
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+                <div style="background:#f0f9ff;border-radius:8px;height:70px;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;border:2px solid #06b6d4;">👟</div>
+                <div style="background:#f0f9ff;border-radius:8px;height:70px;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;border:2px solid transparent;">👟</div>
+                <div style="background:#f0f9ff;border-radius:8px;height:70px;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;border:2px solid transparent;">👟</div>
+                <div style="background:#f0f9ff;border-radius:8px;height:70px;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;border:2px solid transparent;">👟</div>
+              </div>
+            </div>
+            <!-- Info -->
+            <div>
+              <div style="font-size:11px;font-weight:700;color:#06b6d4;letter-spacing:.1em;margin-bottom:10px;" class="sc-editable" data-label="Brand">NIKE · AIR MAX SERIES</div>
+              <h1 style="font-size:34px;font-weight:800;line-height:1.2;letter-spacing:-1px;margin-bottom:16px;" class="sc-editable" data-label="Product Title">Air Max Velocity Pro 2025</h1>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+                <div style="color:#fbbf24;font-size:16px;">★★★★★</div>
+                <span style="font-size:13px;color:#888;" class="sc-editable" data-label="Reviews">(248 reviews)</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+                <span style="font-size:36px;font-weight:900;letter-spacing:-1px;" class="sc-editable" data-label="Price">$149</span>
+                <span style="font-size:20px;color:#bbb;text-decoration:line-through;" class="sc-editable" data-label="Original Price">$199</span>
+                <span style="background:#dcfce7;color:#16a34a;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;" class="sc-editable" data-label="Discount">25% OFF</span>
+              </div>
+              <p style="font-size:15px;color:#666;line-height:1.7;margin-bottom:28px;" class="sc-editable" data-label="Description">The pinnacle of comfort meets cutting-edge performance. Engineered for runners who demand the best — featuring responsive cushioning and breathable mesh upper.</p>
+              <!-- Size -->
+              <div style="margin-bottom:24px;">
+                <div style="font-size:13px;font-weight:700;margin-bottom:10px;" class="sc-editable" data-label="Size Label">Select Size</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <button style="width:46px;height:46px;border-radius:8px;border:2px solid #06b6d4;background:#f0f9ff;font-size:13px;font-weight:700;cursor:pointer;color:#06b6d4;">8</button>
+                  <button style="width:46px;height:46px;border-radius:8px;border:2px solid #eee;background:#fff;font-size:13px;cursor:pointer;">9</button>
+                  <button style="width:46px;height:46px;border-radius:8px;border:2px solid #eee;background:#fff;font-size:13px;cursor:pointer;">10</button>
+                  <button style="width:46px;height:46px;border-radius:8px;border:2px solid #eee;background:#fff;font-size:13px;cursor:pointer;">11</button>
+                  <button style="width:46px;height:46px;border-radius:8px;border:2px solid #eee;background:#fff;font-size:13px;cursor:pointer;">12</button>
+                </div>
+              </div>
+              <!-- CTAs -->
+              <div style="display:flex;gap:12px;margin-bottom:20px;">
+                <button style="flex:1;background:#111;color:#fff;border:none;padding:16px;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;" class="sc-editable" data-label="Add to Cart">Add to Cart</button>
+                <button style="width:52px;background:#fff;border:2px solid #eee;border-radius:10px;font-size:20px;cursor:pointer;">♡</button>
+              </div>
+              <button style="width:100%;background:#06b6d4;color:#fff;border:none;padding:16px;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;" class="sc-editable" data-label="Buy Now">Buy Now</button>
+            </div>
+          </div>
+          <!-- Related -->
+          <h2 style="font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:20px;" class="sc-editable" data-label="Related Title">You May Also Like</h2>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;">
+            <div style="background:#fafafa;border-radius:12px;padding:16px;text-align:center;" class="sc-editable" data-label="Related Product"><div style="font-size:48px;margin-bottom:10px;">👟</div><div style="font-weight:700;font-size:14px;" class="sc-editable" data-label="Product Name">Air Zoom Lite</div><div style="color:#06b6d4;font-weight:800;font-size:16px;margin-top:4px;" class="sc-editable" data-label="Price">$89</div></div>
+            <div style="background:#fafafa;border-radius:12px;padding:16px;text-align:center;" class="sc-editable" data-label="Related Product"><div style="font-size:48px;margin-bottom:10px;">👟</div><div style="font-weight:700;font-size:14px;" class="sc-editable" data-label="Product Name">Ultra Boost X</div><div style="color:#06b6d4;font-weight:800;font-size:16px;margin-top:4px;" class="sc-editable" data-label="Price">$129</div></div>
+            <div style="background:#fafafa;border-radius:12px;padding:16px;text-align:center;" class="sc-editable" data-label="Related Product"><div style="font-size:48px;margin-bottom:10px;">👟</div><div style="font-weight:700;font-size:14px;" class="sc-editable" data-label="Product Name">RunFlex Pro</div><div style="color:#06b6d4;font-weight:800;font-size:16px;margin-top:4px;" class="sc-editable" data-label="Price">$109</div></div>
+            <div style="background:#fafafa;border-radius:12px;padding:16px;text-align:center;" class="sc-editable" data-label="Related Product"><div style="font-size:48px;margin-bottom:10px;">👟</div><div style="font-weight:700;font-size:14px;" class="sc-editable" data-label="Product Name">Cloud Step 3</div><div style="color:#06b6d4;font-weight:800;font-size:16px;margin-top:4px;" class="sc-editable" data-label="Price">$99</div></div>
+          </div>
+        </div>
+        <footer style="background:#111;color:#888;text-align:center;padding:28px;font-size:13px;" class="sc-editable" data-label="Footer">© 2025 LuxeShop · All rights reserved</footer>
+      </div>
+    `
+  },
+  {
+    id: 'webpage-business',
+    name: 'Business Website',
+    type: 'webpage',
+    desc: 'Clean corporate business layout',
+    color: '#22c55e',
+    html: `
+      <div id="sc-page" style="font-family:'Segoe UI',sans-serif;color:#111;background:#fff;">
+        <nav style="padding:18px 48px;display:flex;align-items:center;justify-content:space-between;background:#fff;box-shadow:0 1px 0 #eee;" class="sc-editable" data-label="Navigation">
+          <div style="font-size:20px;font-weight:900;letter-spacing:-0.5px;" class="sc-editable" data-label="Company Name">Acme <span style="color:#22c55e;">Corp</span></div>
+          <div style="display:flex;gap:28px;">
+            <a href="#" style="color:#555;text-decoration:none;font-size:14px;" class="sc-editable" data-label="Nav">Services</a>
+            <a href="#" style="color:#555;text-decoration:none;font-size:14px;" class="sc-editable" data-label="Nav">About</a>
+            <a href="#" style="color:#555;text-decoration:none;font-size:14px;" class="sc-editable" data-label="Nav">Clients</a>
+            <a href="#" style="color:#555;text-decoration:none;font-size:14px;" class="sc-editable" data-label="Nav">Contact</a>
+          </div>
+          <button style="background:#22c55e;color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;" class="sc-editable" data-label="Nav CTA">Get a Quote</button>
+        </nav>
+        <!-- Hero -->
+        <section style="background:linear-gradient(135deg,#f0fdf4,#fff);padding:96px 48px;display:flex;gap:64px;align-items:center;" class="sc-editable" data-label="Hero Section">
+          <div style="flex:1;">
+            <div style="display:inline-block;background:#dcfce7;color:#16a34a;font-size:12px;font-weight:700;padding:5px 14px;border-radius:99px;margin-bottom:20px;letter-spacing:.06em;" class="sc-editable" data-label="Badge">✓ TRUSTED BY 500+ COMPANIES</div>
+            <h1 style="font-size:52px;font-weight:800;line-height:1.15;letter-spacing:-2px;margin-bottom:24px;" class="sc-editable" data-label="Headline">We Help Businesses Grow Faster</h1>
+            <p style="font-size:18px;color:#666;line-height:1.7;margin-bottom:36px;max-width:480px;" class="sc-editable" data-label="Subheadline">From strategy to execution, our team delivers measurable results across every channel.</p>
+            <div style="display:flex;gap:12px;">
+              <button style="background:#22c55e;color:#fff;border:none;padding:14px 28px;border-radius:9px;font-weight:700;font-size:15px;cursor:pointer;" class="sc-editable" data-label="CTA">Talk to Sales</button>
+              <button style="background:#fff;color:#111;border:2px solid #ddd;padding:14px 24px;border-radius:9px;font-size:15px;cursor:pointer;" class="sc-editable" data-label="Secondary CTA">Our Services →</button>
+            </div>
+          </div>
+          <div style="flex:1;background:linear-gradient(135deg,#22c55e,#16a34a);border-radius:20px;height:360px;display:flex;align-items:center;justify-content:center;font-size:80px;" class="sc-editable" data-label="Hero Image">🏢</div>
+        </section>
+        <!-- Stats -->
+        <section style="background:#111;padding:48px;display:grid;grid-template-columns:repeat(4,1fr);gap:0;" class="sc-editable" data-label="Stats Section">
+          <div style="text-align:center;padding:0 24px;border-right:1px solid rgba(255,255,255,.1);" class="sc-editable" data-label="Stat"><div style="font-size:40px;font-weight:900;color:#22c55e;" class="sc-editable" data-label="Stat Value">500+</div><div style="color:#888;font-size:14px;margin-top:6px;" class="sc-editable" data-label="Stat Label">Happy Clients</div></div>
+          <div style="text-align:center;padding:0 24px;border-right:1px solid rgba(255,255,255,.1);" class="sc-editable" data-label="Stat"><div style="font-size:40px;font-weight:900;color:#22c55e;" class="sc-editable" data-label="Stat Value">12yr</div><div style="color:#888;font-size:14px;margin-top:6px;" class="sc-editable" data-label="Stat Label">Experience</div></div>
+          <div style="text-align:center;padding:0 24px;border-right:1px solid rgba(255,255,255,.1);" class="sc-editable" data-label="Stat"><div style="font-size:40px;font-weight:900;color:#22c55e;" class="sc-editable" data-label="Stat Value">98%</div><div style="color:#888;font-size:14px;margin-top:6px;" class="sc-editable" data-label="Stat Label">Client Retention</div></div>
+          <div style="text-align:center;padding:0 24px;" class="sc-editable" data-label="Stat"><div style="font-size:40px;font-weight:900;color:#22c55e;" class="sc-editable" data-label="Stat Value">3x</div><div style="color:#888;font-size:14px;margin-top:6px;" class="sc-editable" data-label="Stat Label">Avg. Revenue Growth</div></div>
+        </section>
+        <!-- Services -->
+        <section style="padding:80px 48px;background:#fff;" class="sc-editable" data-label="Services Section">
+          <h2 style="text-align:center;font-size:36px;font-weight:800;letter-spacing:-1px;margin-bottom:48px;" class="sc-editable" data-label="Services Title">Our Services</h2>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;max-width:900px;margin:0 auto;">
+            <div style="padding:28px;border:1px solid #f0f0f0;border-radius:14px;transition:.2s;" class="sc-editable" data-label="Service"><div style="font-size:32px;margin-bottom:14px;">📊</div><h3 style="font-size:17px;font-weight:700;margin-bottom:8px;" class="sc-editable" data-label="Service Title">Strategy</h3><p style="font-size:14px;color:#777;line-height:1.6;" class="sc-editable" data-label="Service Desc">Data-driven growth strategies tailored to your business goals.</p></div>
+            <div style="padding:28px;border:1px solid #f0f0f0;border-radius:14px;" class="sc-editable" data-label="Service"><div style="font-size:32px;margin-bottom:14px;">🎯</div><h3 style="font-size:17px;font-weight:700;margin-bottom:8px;" class="sc-editable" data-label="Service Title">Marketing</h3><p style="font-size:14px;color:#777;line-height:1.6;" class="sc-editable" data-label="Service Desc">Full-funnel marketing campaigns that convert visitors to customers.</p></div>
+            <div style="padding:28px;border:1px solid #f0f0f0;border-radius:14px;" class="sc-editable" data-label="Service"><div style="font-size:32px;margin-bottom:14px;">💻</div><h3 style="font-size:17px;font-weight:700;margin-bottom:8px;" class="sc-editable" data-label="Service Title">Development</h3><p style="font-size:14px;color:#777;line-height:1.6;" class="sc-editable" data-label="Service Desc">Custom web and app development built for scale.</p></div>
+          </div>
+        </section>
+        <!-- Contact -->
+        <section style="background:#f0fdf4;padding:80px 48px;text-align:center;" class="sc-editable" data-label="Contact Section">
+          <h2 style="font-size:36px;font-weight:800;margin-bottom:16px;letter-spacing:-1px;" class="sc-editable" data-label="Contact Headline">Ready to Grow?</h2>
+          <p style="font-size:17px;color:#666;margin-bottom:36px;" class="sc-editable" data-label="Contact Subtext">Let's talk about how we can help your business.</p>
+          <button style="background:#22c55e;color:#fff;border:none;padding:16px 40px;border-radius:10px;font-weight:700;font-size:17px;cursor:pointer;" class="sc-editable" data-label="Contact CTA">Schedule a Free Call</button>
+        </section>
+        <footer style="background:#111;color:#888;text-align:center;padding:28px;font-size:13px;" class="sc-editable" data-label="Footer">© 2025 Acme Corp · All rights reserved</footer>
+      </div>
+    `
+  },
+  {
+    id: 'webpage-saas',
+    name: 'SaaS Pricing Page',
+    type: 'webpage',
+    desc: 'Pricing tiers with feature comparison',
+    color: '#ec4899',
+    html: `
+      <div id="sc-page" style="font-family:'Segoe UI',sans-serif;color:#111;background:#fff;">
+        <nav style="padding:18px 48px;display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:1px solid #eee;" class="sc-editable" data-label="Navigation">
+          <div style="font-size:20px;font-weight:900;" class="sc-editable" data-label="Logo">Prism<span style="color:#ec4899;">AI</span></div>
+          <div style="display:flex;gap:24px;"><a href="#" style="color:#555;text-decoration:none;font-size:14px;" class="sc-editable" data-label="Nav">Features</a><a href="#" style="color:#555;text-decoration:none;font-size:14px;" class="sc-editable" data-label="Nav">Docs</a><a href="#" style="color:#555;text-decoration:none;font-size:14px;" class="sc-editable" data-label="Nav">Blog</a></div>
+          <div style="display:flex;gap:10px;"><button style="background:#fff;color:#111;border:2px solid #eee;padding:9px 18px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;" class="sc-editable" data-label="Login">Log In</button><button style="background:#ec4899;color:#fff;border:none;padding:9px 18px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;" class="sc-editable" data-label="Signup">Start Free</button></div>
+        </nav>
+        <section style="text-align:center;padding:72px 48px 48px;" class="sc-editable" data-label="Header">
+          <h1 style="font-size:48px;font-weight:900;letter-spacing:-2px;margin-bottom:16px;" class="sc-editable" data-label="Title">Simple, Transparent Pricing</h1>
+          <p style="font-size:18px;color:#666;max-width:500px;margin:0 auto;" class="sc-editable" data-label="Subtitle">Choose the plan that works for your team. Upgrade or cancel any time.</p>
+          <div style="display:inline-flex;background:#f3f4f6;border-radius:99px;padding:4px;margin-top:28px;">
+            <button style="padding:8px 22px;border-radius:99px;border:none;background:#fff;font-weight:600;font-size:14px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.1);" class="sc-editable" data-label="Toggle">Monthly</button>
+            <button style="padding:8px 22px;border-radius:99px;border:none;background:transparent;font-size:14px;cursor:pointer;color:#888;" class="sc-editable" data-label="Toggle">Annual <span style="color:#ec4899;font-weight:700;font-size:11px;">-20%</span></button>
+          </div>
+        </section>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;max-width:1000px;margin:0 auto;padding:0 48px 80px;">
+          <div style="border:2px solid #eee;border-radius:20px;padding:32px;" class="sc-editable" data-label="Pricing Card">
+            <div style="font-size:14px;font-weight:700;color:#888;margin-bottom:12px;letter-spacing:.05em;" class="sc-editable" data-label="Plan">STARTER</div>
+            <div style="font-size:46px;font-weight:900;letter-spacing:-2px;margin-bottom:4px;" class="sc-editable" data-label="Price">$0</div>
+            <div style="font-size:13px;color:#888;margin-bottom:24px;" class="sc-editable" data-label="Period">Free forever</div>
+            <button style="width:100%;background:#f3f4f6;color:#111;border:none;padding:13px;border-radius:9px;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:24px;" class="sc-editable" data-label="CTA">Get Started Free</button>
+            <div style="font-size:13px;color:#555;display:flex;flex-direction:column;gap:10px;"><div>✓ 3 projects</div><div>✓ 5GB storage</div><div>✓ Basic templates</div><div>✓ Community support</div></div>
+          </div>
+          <div style="border:2px solid #ec4899;border-radius:20px;padding:32px;background:linear-gradient(180deg,#fff8fb,#fff);position:relative;" class="sc-editable" data-label="Pricing Card">
+            <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:#ec4899;color:#fff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:99px;letter-spacing:.07em;">MOST POPULAR</div>
+            <div style="font-size:14px;font-weight:700;color:#ec4899;margin-bottom:12px;letter-spacing:.05em;" class="sc-editable" data-label="Plan">PRO</div>
+            <div style="font-size:46px;font-weight:900;letter-spacing:-2px;margin-bottom:4px;" class="sc-editable" data-label="Price">$29</div>
+            <div style="font-size:13px;color:#888;margin-bottom:24px;" class="sc-editable" data-label="Period">per month</div>
+            <button style="width:100%;background:#ec4899;color:#fff;border:none;padding:13px;border-radius:9px;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:24px;" class="sc-editable" data-label="CTA">Start Pro Trial</button>
+            <div style="font-size:13px;color:#555;display:flex;flex-direction:column;gap:10px;"><div>✓ Unlimited projects</div><div>✓ 100GB storage</div><div>✓ All templates</div><div>✓ Priority support</div><div>✓ Custom domain</div></div>
+          </div>
+          <div style="border:2px solid #eee;border-radius:20px;padding:32px;" class="sc-editable" data-label="Pricing Card">
+            <div style="font-size:14px;font-weight:700;color:#888;margin-bottom:12px;letter-spacing:.05em;" class="sc-editable" data-label="Plan">ENTERPRISE</div>
+            <div style="font-size:46px;font-weight:900;letter-spacing:-2px;margin-bottom:4px;" class="sc-editable" data-label="Price">$99</div>
+            <div style="font-size:13px;color:#888;margin-bottom:24px;" class="sc-editable" data-label="Period">per month</div>
+            <button style="width:100%;background:#111;color:#fff;border:none;padding:13px;border-radius:9px;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:24px;" class="sc-editable" data-label="CTA">Contact Sales</button>
+            <div style="font-size:13px;color:#555;display:flex;flex-direction:column;gap:10px;"><div>✓ Everything in Pro</div><div>✓ 1TB storage</div><div>✓ SSO & SAML</div><div>✓ Dedicated manager</div><div>✓ SLA guarantee</div></div>
+          </div>
+        </div>
+        <footer style="background:#111;color:#888;text-align:center;padding:28px;font-size:13px;" class="sc-editable" data-label="Footer">© 2025 PrismAI · Pricing subject to change</footer>
+      </div>
+    `
+  }
+];
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showDashboard() { showScreen('screen-dashboard'); }
+
+function openPicker(type) {
+  showScreen('screen-picker');
+  filterTemplates(type, null, null);
+  // sync sidebar
+  document.querySelectorAll('.picker-nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.type === type || (type === 'all' && el.dataset.type === 'all'));
+  });
+  // sync tabs
+  document.querySelectorAll('#picker-tabs .tab-item').forEach(el => {
+    const map = { 'All': 'all', 'Webpage': 'webpage', 'Blog': 'blog', 'Landing': 'landing', 'Portfolio': 'portfolio', 'E-Commerce': 'ecommerce' };
+    el.classList.toggle('active', map[el.textContent.trim()] === type || (type === 'all' && el.textContent === 'All'));
+  });
+}
+
+function openEditor(templateId, projectName) {
+  const tpl = TEMPLATES.find(t => t.id === templateId);
+  if (!tpl) return;
+  currentTemplate = tpl;
+  currentProjectName = projectName || tpl.name;
+  document.getElementById('editor-project-name').textContent = currentProjectName;
+
+  // Inject template
+  const content = document.getElementById('canvas-content');
+  content.innerHTML = tpl.html;
+
+  // Make elements editable
+  initEditableElements();
+
+  showScreen('screen-editor');
+  undoStack = [];
+  redoStack = [];
+}
+
+function openEditorFromRecent(name, type) {
+  const tpl = TEMPLATES.find(t => t.type === type) || TEMPLATES[0];
+  openEditor(tpl.id, name);
+}
+
+// ═══════════════════════════════════════════════
+// TEMPLATE PICKER
+// ═══════════════════════════════════════════════
+let currentFilter = 'all';
+
+function buildPickerGrid(filter, search) {
+  const grid = document.getElementById('picker-grid');
+  let list = TEMPLATES;
+  if (filter && filter !== 'all') list = list.filter(t => t.type === filter);
+  if (search) list = list.filter(t => t.name.toLowerCase().includes(search.toLowerCase()) || t.desc.toLowerCase().includes(search.toLowerCase()));
+
+  grid.innerHTML = list.map(t => `
+    <div class="picker-card" onclick="openEditor('${t.id}')">
+      <div class="picker-thumb">
+        <div style="width:200%;height:200%;transform:scale(.5);transform-origin:top left;overflow:hidden;background:#fff;">
+          ${t.html}
+        </div>
+      </div>
+      <div class="picker-card-info">
+        <div>
+          <div class="picker-card-name">${t.name}</div>
+          <div class="picker-card-type">${t.type.charAt(0).toUpperCase()+t.type.slice(1)}</div>
+        </div>
+        <button class="picker-open-btn" onclick="openEditor('${t.id}');event.stopPropagation();">Use This →</button>
+      </div>
+    </div>
+  `).join('');
+
+  if (!list.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--text3);">No templates found</div>';
+  }
+}
+
+function filterTemplates(type, sidebarEl, tabEl) {
+  currentFilter = type;
+  buildPickerGrid(type, document.getElementById('search-input')?.value || '');
+
+  if (sidebarEl) {
+    document.querySelectorAll('.picker-nav-item').forEach(el => el.classList.remove('active'));
+    sidebarEl.classList.add('active');
+  }
+  if (tabEl) {
+    document.querySelectorAll('#picker-tabs .tab-item').forEach(el => el.classList.remove('active'));
+    tabEl.classList.add('active');
+  }
+}
+
+function searchTemplates(val) {
+  buildPickerGrid(currentFilter, val);
+}
+
+// ═══════════════════════════════════════════════
+// EDITOR – EDITABLE ELEMENTS
+// ═══════════════════════════════════════════════
+function initEditableElements() {
+  const content = document.getElementById('canvas-content');
+  const editables = content.querySelectorAll('.sc-editable');
+
+  editables.forEach(el => {
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', function(e) {
+      e.stopPropagation();
+      selectElement(this);
+    });
+    el.addEventListener('dblclick', function(e) {
+      e.stopPropagation();
+      openInlineEditor(this);
+    });
+  });
+
+  // Deselect on canvas bg click
+  content.addEventListener('click', () => {
+    deselectAll();
+    closeInlineEditor();
+    document.getElementById('props-content').innerHTML = `<div class="no-selection"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg>Click any element to edit its properties</div>`;
+  });
+}
+
+function selectElement(el) {
+  deselectAll();
+  el.classList.add('selected');
+  selectedElement = el;
+  showPropsPanel(el);
+}
+
+function deselectAll() {
+  document.querySelectorAll('#canvas-content .selected').forEach(el => el.classList.remove('selected'));
+  selectedElement = null;
+}
+
+function showPropsPanel(el) {
+  const label = el.dataset.label || 'Element';
+  const tag = el.tagName.toLowerCase();
+  const bg = el.style.background || el.style.backgroundColor || '';
+  const color = el.style.color || '';
+  const fontSize = el.style.fontSize || '';
+  const padding = el.style.padding || '';
+  const borderRadius = el.style.borderRadius || '';
+  const isText = ['p','h1','h2','h3','h4','span','a','div'].includes(tag);
+  const isBtn = tag === 'button';
+
+  let html = `
+    <div class="props-section">
+      <div class="props-section-title">Selected: ${label}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:-4px;margin-bottom:8px;">${tag.toUpperCase()} element</div>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center;font-size:12px;padding:7px;" onclick="openInlineEditor(selectedElement)">
+        ✏️ Edit Content
+      </button>
+    </div>
+    <div class="props-section">
+      <div class="props-section-title">Style</div>
+      <div class="prop-row">
+        <label class="prop-label">Font size</label>
+        <input class="prop-input" type="text" placeholder="16px" value="${fontSize}" style="width:80px;" oninput="setProp('fontSize',this.value)">
+      </div>
+      <div class="prop-row">
+        <label class="prop-label">Color</label>
+        <input type="color" class="color-swatch" value="${rgbToHex(color) || '#111111'}" oninput="setProp('color',this.value)">
+      </div>
+      <div class="prop-row">
+        <label class="prop-label">Background</label>
+        <input type="color" class="color-swatch" value="${rgbToHex(bg) || '#ffffff'}" oninput="setProp('backgroundColor',this.value)">
+      </div>
+      <div class="prop-row">
+        <label class="prop-label">Padding</label>
+        <input class="prop-input" type="text" placeholder="10px 20px" value="${padding}" style="width:100px;" oninput="setProp('padding',this.value)">
+      </div>
+      <div class="prop-row">
+        <label class="prop-label">Radius</label>
+        <input class="prop-input" type="text" placeholder="8px" value="${borderRadius}" style="width:80px;" oninput="setProp('borderRadius',this.value)">
+      </div>
+    </div>
+    ${isBtn ? `<div class="props-section"><div class="props-section-title">Button</div>
+      <div class="prop-row"><label class="prop-label">Border</label><input class="prop-input" type="text" placeholder="2px solid #eee" value="${el.style.border || ''}" style="width:130px;" oninput="setProp('border',this.value)"></div>
+    </div>` : ''}
+    <div class="props-section">
+      <div class="props-section-title">Actions</div>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center;font-size:12px;padding:7px;margin-bottom:6px;" onclick="duplicateElement()">⧉ Duplicate</button>
+      <button class="btn" style="width:100%;justify-content:center;font-size:12px;padding:7px;background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.2);" onclick="deleteElement()">✕ Delete</button>
+    </div>
+  `;
+  document.getElementById('props-content').innerHTML = html;
+}
+
+function setProp(prop, val) {
+  if (!selectedElement) return;
+  saveUndo();
+  selectedElement.style[prop] = val;
+}
+
+function duplicateElement() {
+  if (!selectedElement) return;
+  saveUndo();
+  const clone = selectedElement.cloneNode(true);
+  clone.classList.remove('selected');
+  selectedElement.parentNode.insertBefore(clone, selectedElement.nextSibling);
+  initEditableElements();
+  showToast('Element duplicated', 'success');
+}
+
+function deleteElement() {
+  if (!selectedElement) return;
+  saveUndo();
+  selectedElement.remove();
+  selectedElement = null;
+  document.getElementById('props-content').innerHTML = `<div class="no-selection"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg>Click any element to edit its properties</div>`;
+  showToast('Element deleted', 'success');
+}
+
+// ═══════════════════════════════════════════════
+// INLINE EDITOR
+// ═══════════════════════════════════════════════
+let inlineTarget = null;
+
+function openInlineEditor(el) {
+  if (!el) return;
+  inlineTarget = el;
+  const label = el.dataset.label || 'Element';
+  const tag = el.tagName.toLowerCase();
+  const isMultiline = ['p', 'div', 'section', 'article'].includes(tag);
+
+  document.getElementById('inline-editor-title').textContent = `Edit: ${label}`;
+
+  let bodyHTML = '';
+  if (isMultiline) {
+    bodyHTML = `<textarea id="ie-input" style="min-height:80px;">${el.innerText}</textarea>`;
+  } else {
+    bodyHTML = `<input type="text" id="ie-input" value="${el.innerText.replace(/"/g, '&quot;')}">`;
+  }
+  bodyHTML += `
+    <div style="margin-top:10px;">
+      <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px;">Text Color</label>
+      <input type="color" class="color-swatch" id="ie-color" value="${rgbToHex(el.style.color) || '#111111'}" oninput="previewInlineColor(this.value)">
+    </div>
+  `;
+  document.getElementById('inline-editor-body').innerHTML = bodyHTML;
+
+  // Position near element
+  const rect = el.getBoundingClientRect();
+  const editor = document.getElementById('inline-editor');
+  let top = rect.bottom + 10;
+  let left = rect.left;
+  if (top + 200 > window.innerHeight) top = rect.top - 210;
+  if (left + 320 > window.innerWidth) left = window.innerWidth - 340;
+  editor.style.top = top + 'px';
+  editor.style.left = left + 'px';
+  editor.classList.add('visible');
+}
+
+function previewInlineColor(val) {
+  if (inlineTarget) inlineTarget.style.color = val;
+}
+
+function applyInlineEdit() {
+  if (!inlineTarget) return;
+  saveUndo();
+  const input = document.getElementById('ie-input');
+  if (input) inlineTarget.innerText = input.value;
+  const colorInput = document.getElementById('ie-color');
+  if (colorInput) inlineTarget.style.color = colorInput.value;
+  closeInlineEditor();
+  showToast('Changes saved', 'success');
+}
+
+function closeInlineEditor() {
+  document.getElementById('inline-editor').classList.remove('visible');
+  inlineTarget = null;
+}
+
+// ═══════════════════════════════════════════════
+// DRAG & DROP ELEMENTS
+// ═══════════════════════════════════════════════
+function startDrag(type, e) {
+  dragElementType = type;
+  e.dataTransfer.effectAllowed = 'copy';
+  e.dataTransfer.setData('text/plain', type);
+}
+
+function allowDrop(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'copy';
+}
+
+function dropElement(e) {
+  e.preventDefault();
+  if (!dragElementType) return;
+  saveUndo();
+  const el = createNewElement(dragElementType);
+  const content = document.getElementById('canvas-content');
+  const page = content.querySelector('#sc-page') || content;
+
+  // Try to find drop position
+  const drop = document.elementFromPoint(e.clientX, e.clientY);
+  if (drop && drop !== content && page.contains(drop)) {
+    const parent = drop.closest('section, div[class*="sc-editable"]') || drop.parentElement;
+    if (parent && page.contains(parent)) {
+      parent.appendChild(el);
+    } else {
+      page.appendChild(el);
+    }
+  } else {
+    page.appendChild(el);
+  }
+  initEditableElements();
+  selectElement(el);
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  showToast(`${dragElementType.charAt(0).toUpperCase() + dragElementType.slice(1)} added`, 'success');
+  dragElementType = null;
+}
+
+function createNewElement(type) {
+  const el = document.createElement('div');
+  el.className = 'sc-editable';
+  el.dataset.label = type.charAt(0).toUpperCase() + type.slice(1);
+
+  const elements = {
+    text: `<div class="sc-editable" data-label="Text" style="padding:16px 24px;font-size:16px;color:#333;line-height:1.7;">Double-click to edit this text. You can change the content, style, color, and more using the properties panel on the right.</div>`,
+    button: `<div class="sc-editable" data-label="Button" style="padding:16px 24px;"><button style="background:#f97316;color:#fff;border:none;padding:12px 28px;border-radius:9px;font-size:15px;font-weight:700;cursor:pointer;font-family:sans-serif;" class="sc-editable" data-label="Button">Click Me</button></div>`,
+    image: `<div class="sc-editable" data-label="Image" style="padding:16px 24px;"><div style="background:#f0f0f0;border:2px dashed #ccc;border-radius:12px;height:200px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#888;font-size:14px;font-family:sans-serif;"><span style="font-size:36px;">🖼</span><span>Click to add image</span></div></div>`,
+    header: `<div class="sc-editable" data-label="Header" style="padding:20px 24px;background:#f8f8f8;border-bottom:2px solid #eee;display:flex;align-items:center;justify-content:space-between;font-family:sans-serif;"><span style="font-size:20px;font-weight:900;" class="sc-editable" data-label="Logo">Your Logo</span><div style="display:flex;gap:24px;"><a href="#" style="font-size:14px;color:#555;text-decoration:none;" class="sc-editable" data-label="Nav Link">Home</a><a href="#" style="font-size:14px;color:#555;text-decoration:none;" class="sc-editable" data-label="Nav Link">About</a><a href="#" style="font-size:14px;color:#555;text-decoration:none;" class="sc-editable" data-label="Nav Link">Contact</a></div><button style="background:#f97316;color:#fff;border:none;padding:9px 20px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;" class="sc-editable" data-label="CTA Button">Get Started</button></div>`,
+    section: `<div class="sc-editable" data-label="Section" style="padding:64px 48px;background:#f9f9f9;text-align:center;font-family:sans-serif;"><h2 style="font-size:32px;font-weight:800;margin-bottom:16px;letter-spacing:-1px;" class="sc-editable" data-label="Section Title">New Section</h2><p style="font-size:16px;color:#666;max-width:500px;margin:0 auto;" class="sc-editable" data-label="Section Text">Add your content here. Double-click any text to edit it.</p></div>`,
+    divider: `<div class="sc-editable" data-label="Divider" style="padding:16px 24px;"><hr style="border:none;border-top:2px solid #eee;"></div>`,
+    video: `<div class="sc-editable" data-label="Video" style="padding:16px 24px;"><div style="background:#111;border-radius:12px;height:200px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#fff;font-size:14px;font-family:sans-serif;cursor:pointer;"><span style="font-size:48px;">▶</span><span>Paste YouTube URL in properties</span></div></div>`,
+    columns: `<div class="sc-editable" data-label="Columns" style="padding:24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;font-family:sans-serif;"><div style="background:#f5f5f5;border-radius:10px;padding:24px;text-align:center;" class="sc-editable" data-label="Column 1"><div style="font-size:28px;margin-bottom:10px;">✨</div><div style="font-weight:700;font-size:15px;" class="sc-editable" data-label="Column Title">Column 1</div><p style="font-size:13px;color:#777;margin-top:8px;" class="sc-editable" data-label="Column Text">Add content here</p></div><div style="background:#f5f5f5;border-radius:10px;padding:24px;text-align:center;" class="sc-editable" data-label="Column 2"><div style="font-size:28px;margin-bottom:10px;">🚀</div><div style="font-weight:700;font-size:15px;" class="sc-editable" data-label="Column Title">Column 2</div><p style="font-size:13px;color:#777;margin-top:8px;" class="sc-editable" data-label="Column Text">Add content here</p></div><div style="background:#f5f5f5;border-radius:10px;padding:24px;text-align:center;" class="sc-editable" data-label="Column 3"><div style="font-size:28px;margin-bottom:10px;">💡</div><div style="font-weight:700;font-size:15px;" class="sc-editable" data-label="Column Title">Column 3</div><p style="font-size:13px;color:#777;margin-top:8px;" class="sc-editable" data-label="Column Text">Add content here</p></div></div>`
+  };
+
+  el.innerHTML = (elements[type] || elements.text);
+  // unwrap single child
+  if (el.children.length === 1 && el.firstElementChild) {
+    const child = el.firstElementChild;
+    child.className += ' sc-editable';
+    child.dataset.label = type.charAt(0).toUpperCase() + type.slice(1);
+    return child;
+  }
+  return el;
+}
+
+// ═══════════════════════════════════════════════
+// UNDO / REDO
+// ═══════════════════════════════════════════════
+function saveUndo() {
+  const content = document.getElementById('canvas-content');
+  undoStack.push(content.innerHTML);
+  redoStack = [];
+  if (undoStack.length > 50) undoStack.shift();
+}
+
+function undoAction() {
+  if (!undoStack.length) return;
+  const content = document.getElementById('canvas-content');
+  redoStack.push(content.innerHTML);
+  content.innerHTML = undoStack.pop();
+  initEditableElements();
+  showToast('Undo', 'success');
+}
+
+function redoAction() {
+  if (!redoStack.length) return;
+  const content = document.getElementById('canvas-content');
+  undoStack.push(content.innerHTML);
+  content.innerHTML = redoStack.pop();
+  initEditableElements();
+  showToast('Redo', 'success');
+}
+
+// ═══════════════════════════════════════════════
+// VIEWPORT
+// ═══════════════════════════════════════════════
+function setViewport(mode, btn) {
+  document.querySelectorAll('.vp-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const frame = document.getElementById('canvas-frame');
+  frame.className = 'canvas-frame ' + (mode !== 'desktop' ? mode : '');
+}
+
+// ═══════════════════════════════════════════════
+// PREVIEW
+// ═══════════════════════════════════════════════
+function previewPage() {
+  const content = document.getElementById('canvas-content').innerHTML;
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Preview</title></head><body>${content}</body></html>`);
+  win.document.close();
+}
+
+// ═══════════════════════════════════════════════
+// DOWNLOAD
+// ═══════════════════════════════════════════════
+function openDownloadModal() {
+  document.getElementById('download-modal').classList.add('visible');
+}
+function closeDownloadModal() {
+  document.getElementById('download-modal').classList.remove('visible');
+  document.getElementById('dl-progress-wrap').style.display = 'none';
+  document.getElementById('dl-progress-label').style.display = 'none';
+  document.getElementById('dl-progress-bar').style.width = '0';
+}
+function selectDownload(fmt) {
+  downloadFormat = fmt;
+  document.getElementById('dl-html').classList.toggle('selected', fmt === 'html');
+  document.getElementById('dl-zip').classList.toggle('selected', fmt === 'zip');
+}
+
+function downloadPage() {
+  const content = document.getElementById('canvas-content').innerHTML;
+  const name = (currentProjectName || 'my-page').toLowerCase().replace(/\s+/g, '-');
+
+  // Show progress
+  const prog = document.getElementById('dl-progress-wrap');
+  const bar = document.getElementById('dl-progress-bar');
+  const lbl = document.getElementById('dl-progress-label');
+  prog.style.display = 'block';
+  lbl.style.display = 'block';
+  lbl.textContent = 'Building your HTML file…';
+  bar.style.width = '0';
+
+  let pct = 0;
+  const interval = setInterval(() => {
+    pct += Math.random() * 20 + 10;
+    if (pct >= 100) { pct = 100; clearInterval(interval); }
+    bar.style.width = Math.min(pct, 100) + '%';
+  }, 100);
+
+  setTimeout(() => {
+    clearInterval(interval);
+    bar.style.width = '100%';
+    lbl.textContent = 'Download starting…';
+
+    // Clean the content: remove sc-editable classes, cursor styles
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = content;
+    tempDiv.querySelectorAll('[class]').forEach(el => {
+      el.className = el.className.replace(/\bsc-editable\b/g, '').replace(/\bselected\b/g, '').trim();
+      if (!el.className) el.removeAttribute('class');
+    });
+    tempDiv.querySelectorAll('[data-label]').forEach(el => el.removeAttribute('data-label'));
+    tempDiv.querySelectorAll('[style*="cursor: pointer"]').forEach(el => {
+      el.style.cursor = '';
+    });
+    // Remove outline styles from editing
+    tempDiv.querySelectorAll('[style*="outline"]').forEach(el => {
+      el.style.outline = '';
+    });
+
+    const cleanedContent = tempDiv.innerHTML;
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${currentProjectName || 'My Page'}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; }
+    a { transition: opacity .15s; }
+    a:hover { opacity: .75; }
+    button { transition: opacity .15s; }
+    button:hover { opacity: .85; }
+    img { max-width: 100%; height: auto; }
+  </style>
+</head>
+<body>
+${cleanedContent}
+</body>
+</html>`;
+
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${name}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    setTimeout(() => {
+      closeDownloadModal();
+      showToast('Page downloaded as ' + name + '.html', 'success');
+    }, 600);
+  }, 1200);
+}
+
+// ═══════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════
+function showToast(msg, type) {
+  const toast = document.getElementById('toast');
+  const icons = { success: '✓', error: '✕' };
+  toast.querySelector('.toast-icon').textContent = icons[type] || '•';
+  document.getElementById('toast-msg').textContent = msg;
+  toast.className = 'toast ' + (type || '');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2800);
+}
+
+// ═══════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════
+function rgbToHex(val) {
+  if (!val) return '';
+  if (val.startsWith('#')) return val;
+  const match = val.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  if (!match) return '';
+  return '#' + [match[1], match[2], match[3]].map(n => {
+    const h = parseInt(n).toString(16);
+    return h.length === 1 ? '0' + h : h;
+  }).join('');
+}
+
+function toggleElementsPanel() {
+  panelCollapsed = !panelCollapsed;
+  const panel = document.getElementById('elements-panel');
+  const btn = panel.querySelector('.panel-toggle');
+  if (panelCollapsed) {
+    panel.style.width = '48px';
+    panel.querySelector('.elements-grid').style.display = 'none';
+    btn.textContent = '›';
+  } else {
+    panel.style.width = '200px';
+    panel.querySelector('.elements-grid').style.display = 'grid';
+    btn.textContent = '‹';
+  }
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  // Build picker grid with all templates
+  buildPickerGrid('all', '');
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z') { undoAction(); e.preventDefault(); }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'y') { redoAction(); e.preventDefault(); }
+    if (e.key === 'Escape') { closeInlineEditor(); closeDownloadModal(); }
+    if (e.key === 'Delete' && selectedElement && document.getElementById('screen-editor').classList.contains('active')) {
+      deleteElement();
+    }
+  });
+});
+</script>
+</body>
+</html>
